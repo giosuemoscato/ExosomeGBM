@@ -1,0 +1,59 @@
+---
+title: "Graphs"
+author: "Giosuè Moscato"
+date: '2022-10-17'
+output: html_document
+---
+```{r}
+library(ggplot2)
+```
+
+```{r}
+GBM <- read.csv("~/Desktop/ExosomeGBM/ExosomeGBM/02 DATA/GBM.csv", row.names=1)
+```
+
+## Processing of data for graphs
+```{r}
+
+count <- as.matrix(GBM[,1])
+for (i in 2:ncol(GBM)) {
+     rt <- as.matrix(GBM[,i])
+     count <- rbind(count,rt)   
+}
+
+sample <- rep(colnames(GBM),each=nrow(GBM))
+data <- data.frame(sample, count)
+data$sample <- factor(data$sample,levels = colnames(GBM))
+```
+
+###PLOTS
+
+##stat summary plot
+```{r}
+summary_plot <- ggplot(data = data) + stat_summary(mapping = aes(x =log(count+1) , y =  sample),fun.min = min,fun.max = max,fun = median)
+
+
+ggsave("summary_plot.png", summary_plot, width = 15, height = 13, dpi = 500, units = "in")
+
+```
+
+#log10 of distributions of reads
+```{r}
+log10_distribution <- ggplot(data=data)+geom_density(color="blue",aes(log10(count+1)))+coord_cartesian(ylim=c(0,5.2))+facet_wrap(~sample)
+ggsave("distribution.png", log10_distribution,width = 15, height = 13, dpi = 500, units = "in")
+```
+
+#barplot
+```{r}
+barplot <- ggplot(data=data)+geom_boxplot(color="blue",aes(count))+facet_wrap(vars(sample))+coord_flip(xlim=c(0,30))+theme(axis.ticks.x =element_blank(),axis.text.x=element_blank())
+ggsave("barplot.png", barplot,width = 15, height = 13, dpi = 500, units = "in")
+```
+
+#log10 Density plot
+```{r}
+log10_density_plot <- ggplot(data = data,aes(x=log2(count+1), group=sample))+geom_density(fill="black",alpha = 0.5) +facet_wrap(~sample)+coord_cartesian(xlim=c(0,5)) 
+#meanGBM <- data.frame(sample=unique(data$sample), mean=with(data,tapply(count, sample, mean)))
+#log10_density_plot + geom_vline(aes(xintercept=log2(mean)),meanGBM,color="blue")
+ggsave("log10 Density plot.png", log10_density_plot,width = 15, height = 13, dpi = 500, units = "in")
+```
+

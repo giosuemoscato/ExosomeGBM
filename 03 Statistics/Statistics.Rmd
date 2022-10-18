@@ -1,0 +1,38 @@
+---
+title: "Statistics"
+author: "Giosuè Moscato"
+date: '2022-10-17'
+output: html_document
+---
+```{r}
+library(tidyr)
+```
+
+
+```{r}
+GBM <- read.csv("~/Desktop/ExosomeGBM/ExosomeGBM/02 DATA/GBM.csv", row.names=1)
+```
+
+main statistics (mean, sd, min, max, median, 1st and 3rd quartile)
+```{r}
+statistics <- as.data.frame(summary(GBM))
+statistics <- statistics[,2:3]
+statistics <- separate(statistics,Freq, into=c("Stat", "Value"), sep = ":")
+statistics[,3] <- as.numeric(statistics[,3])
+statistics <- spread(statistics, Stat, Value)
+colnames(statistics) <- c("Sample","1st Qu.", "3rd Qu." ,"Max", "Mean", "Median" ,"Min")
+#sd
+statistics$sd <- apply(GBM, 2, sd)
+#total miRNA counts
+sum_GBM <- as.data.frame(apply(GBM, 2, sum))
+colnames(sum_GBM) <- "Total miRNAs"
+statistics <- cbind(statistics,sum_GBM)
+
+statistics <- statistics[,c(1,9,7,2,6,3,4,5,8)]
+```
+
+Saving the results
+```{r}
+write.csv(statistics, "GBM_statistics.csv")
+```
+
