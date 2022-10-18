@@ -4,7 +4,8 @@ author: "Giosuè Moscato"
 date: '2022-10-13'
 output: html_document
 ---
-
+Here, we will merge the two .csv files of the 2 round of sequencing to create a merged .csv file
+Furthermore, we will remove those samples with < 1000 total reads
 ```{r}
 GBM1 <- read.csv("~/Desktop/ExosomeGBM/ExosomeGBM/02 DATA/GBM1.csv", row.names=1)
 GBM2 <- read.csv("~/Desktop/ExosomeGBM/ExosomeGBM/02 DATA/GBM2.csv", row.names=1)
