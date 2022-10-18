@@ -1,0 +1,91 @@
+---
+title: "Rankings"
+author: "Giosuè Moscato"
+date: '2022-10-13'
+output: html_document
+---
+
+#miRNA's ranking
+
+Please check whether the data is in your working directory
+```{r}
+GBM1 <- read.csv("~/Desktop/ExosomeGBM/ExosomeGBM/02 DATA/GBM1.csv", row.names=1)
+GBM2 <- read.csv("~/Desktop/ExosomeGBM/ExosomeGBM/02 DATA/GBM2.csv", row.names=1)
+GBM1 <- GBM1[,-c(22,41)] #no GBM samples
+cutoff1 <- colnames(GBM1)[apply(GBM1,2, sum)>1000]
+cutoff2 <- colnames(GBM2)[apply(GBM2,2, sum)>1000]
+GBM1 <- GBM1[,as.character(cutoff1)]
+GBM2 <- GBM2[,as.character(cutoff2)]
+
+#editing colnames 
+colnames(GBM1) <- paste0(colnames(GBM1), "A")
+colnames(GBM2) <- paste0(colnames(GBM2), "B")
+
+#merging the two datasets
+GBM <- merge(GBM1, GBM2, by="row.names", all=FALSE)
+rownames(GBM) <- GBM[,1]
+GBM <- GBM[,-1]
+```
+
+### Rankings
+```{r}
+GBM1_rank <- matrix(ncol=ncol(GBM1), nrow=nrow(GBM1))
+GBM2_rank<- matrix(ncol=ncol(GBM2), nrow=nrow(GBM2))
+GBM_rank<- matrix(ncol=ncol(GBM), nrow=nrow(GBM))
+
+#GBM1
+        for (i in 1:ncol(GBM1)) {
+        index_rank_matrix <- rank(-GBM1[,i], ties.method = "average")
+        GBM1_rank[,i] <- index_rank_matrix  
+        }
+        GBM1_rank <- as.data.frame(GBM1_rank)
+        rownames(GBM1_rank) <- rownames(GBM1)
+        colnames(GBM1_rank) <- colnames(GBM1)
+#GBM2
+        for (i in 1:ncol(GBM2)) {
+        index_rank_matrix <- rank(-GBM2[,i], ties.method = "average")
+        GBM2_rank[,i] <- index_rank_matrix  
+        }
+        GBM2_rank <- as.data.frame(GBM2_rank)
+        rownames(GBM2_rank) <- rownames(GBM2)
+        colnames(GBM2_rank) <- colnames(GBM2)
+#GBM
+        for (i in 1:ncol(GBM)) {
+        index_rank_matrix <- rank(-GBM[,i], ties.method = "average")
+        GBM_rank[,i] <- index_rank_matrix  
+        }
+        GBM_rank <- as.data.frame(GBM_rank)
+        rownames(GBM_rank) <- rownames(GBM)
+        colnames(GBM_rank) <- colnames(GBM)
+```
+
+### Average rankings
+```{r}
+#GBM1
+        GBM1_average_rank <- apply(GBM1_rank, 1, mean)
+        GBM1_average_rank <- as.data.frame(GBM1_average_rank)
+        colnames(GBM1_average_rank) <- "GBM1.Avg.Rank"
+#GBM2
+        GBM2_average_rank <- apply(GBM2_rank, 1, mean)
+        GBM2_average_rank <- as.data.frame(GBM2_average_rank)
+        colnames(GBM2_average_rank) <- "GBM2.Avg.Rank"
+#GBM
+        GBM_average_rank <- apply(GBM_rank, 1, mean)
+        GBM_average_rank <- as.data.frame(GBM_average_rank)
+        colnames(GBM_average_rank) <- "GBM.Avg.Rank"
+
+#order by average rank
+        GBM1_rank <- GBM1_rank[order(GBM1_average_rank$GBM1.Avg.Rank),]
+        GBM2_rank <- GBM2_rank[order(GBM2_average_rank$GBM2.Avg.Rank),]
+        GBM_rank <- GBM_rank[order(GBM_average_rank$GBM.Avg.Rank),]
+        
+
+#save files        
+        filename1 <- "GBM1_Ranked.csv"
+        filename2 <- "GBM2_Ranked.csv"
+        filename3 <- "GBM_Ranked.csv"
+        write.csv(GBM1_rank, file = filename1)
+        write.csv(GBM2_rank, file=filename2)
+        write.csv(GBM_rank, file=filename3)
+        
+```
