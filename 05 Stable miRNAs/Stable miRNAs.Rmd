@@ -1,0 +1,103 @@
+---
+title: "Stable miRNAs"
+author: "Giosuè Moscato"
+date: '2022-10-13'
+output: html_document
+---
+```{r}
+library(ctrlGene)
+library(data.table)
+library(ggplot2)
+library(plotly)
+```
+
+```{r}
+GBM <- read.csv("~/Desktop/ExosomeGBM/ExosomeGBM/02 DATA/GBM.csv", row.names=1)
+SampleType <- read.csv("~/Desktop/ExosomeGBM/ExosomeGBM/05 Stable miRNAs/SampleType.csv", row.names=1, sep=";")
+```
+
+```{r}
+nonzero <- names(which(apply(GBM, 1, prod)>0))
+```
+
+```{r}
+preRT_index <- SampleType[grep("preRT", SampleType$Type),1]
+postRT_index <- SampleType[grep("postRT", SampleType$Type),1]
+healthy_index <- SampleType[grep("Healthy", SampleType$Type),1]
+```
+
+```{r}
+GBMs <- GBM[nonzero,]
+preGBM <- GBM[nonzero,preRT_index]
+# preGBM <- preGBM[,30:45] ##this line is to select only samples coming from the second round of seq
+postGBM <- GBM[nonzero,postRT_index]
+#postGBM <- postGBM[,17:23] ##this line is to select only samples coming from the second round of seq
+healthyGBM <- GBM[nonzero,healthy_index]
+```
+
+
+```{r}
+inv_GBMs <- as.data.frame(t(GBMs))
+inv_preGBM <- as.data.frame(t(preGBM))
+inv_postGBM <- as.data.frame(t(postGBM))
+inv_healthyGBM <- as.data.frame(t(healthyGBM))
+```
+
+```{r}
+total_stability <- geNorm(inv_GBMs, ctVal = FALSE)
+preRT_stability <- geNorm(inv_preGBM, ctVal = FALSE)
+postRT_stability <- geNorm(inv_postGBM, ctVal = FALSE)
+healthy_stability <- geNorm(inv_healthyGBM, ctVal = FALSE)
+```
+
+```{r}
+splittext <- strsplit(total_stability$Genes[16], "-")
+miRNA1 <- paste(splittext[[1]][1:4], collapse = "-")
+miRNA2 <- paste(splittext[[1]][5:8], collapse = "-")
+total_stability[16,1] <- miRNA1
+total_stability[17,] <- c(miRNA2,total_stability[16,2])
+
+splittext <- strsplit(preRT_stability$Genes[16], "-")
+miRNA1 <- paste(splittext[[1]][1:4], collapse = "-")
+miRNA2 <- paste(splittext[[1]][5:8], collapse = "-")
+preRT_stability[16,1] <- miRNA1
+preRT_stability[17,] <- c(miRNA2,preRT_stability[16,2])
+
+splittext <- strsplit(postRT_stability$Genes[16], "-")
+miRNA1 <- paste(splittext[[1]][1:4], collapse = "-")
+miRNA2 <- paste(splittext[[1]][5:8], collapse = "-")
+postRT_stability[16,1] <- miRNA1
+postRT_stability[17,] <- c(miRNA2,postRT_stability[16,2])
+
+splittext <- strsplit(healthy_stability$Genes[16], "-")
+miRNA1 <- paste(splittext[[1]][1:4], collapse = "-")
+miRNA2 <- paste(splittext[[1]][5:8], collapse = "-")
+healthy_stability[16,1] <- miRNA1
+healthy_stability[17,] <- c(miRNA2,healthy_stability[16,2])
+```
+
+```{r}
+Stable_miRNAs <- merge(total_stability,preRT_stability,by="Genes")
+Stable_miRNAs <- merge(Stable_miRNAs,postRT_stability, by="Genes")
+Stable_miRNAs <- merge(Stable_miRNAs,healthy_stability ,by="Genes")
+
+colnames(Stable_miRNAs) <- c("miRNA","Total stability", "preRT.Stability", "postRT.Stability", "healthy.Stability")
+
+for_melt <- melt(Stable_miRNAs, id.vars="miRNA")
+for_melt[,3] <- as.numeric(for_melt[,3])
+g <- ggplot(data=for_melt, aes(x=value, y=miRNA, color=variable))+geom_point(pch=20, size=3)+ theme(axis.ticks.x = element_blank(),axis.text.x=element_blank())+labs(title="Measuring miRNA stability with geNorm function")
+ggplotly(g)
+```
+```{r}
+g2 <- ggplot(for_melt, aes(x=(1/value), y=miRNA, fill=variable)) + geom_col(position="dodge" ,orientation="y", width = 0.8)+theme(axis.ticks.x =element_blank(),axis.text.x=element_blank(),legend.position="none")+labs(title="Measuring miRNA stability with geNorm function",subtitle ="the higher the value, the more stable the miRNA")+xlab("value") + facet_grid(cols = vars(variable))
+
+g3 <- ggplot(for_melt, aes(x=value, y=miRNA, fill=variable)) + geom_col(position="dodge" ,orientation="y", width = 0.8)+theme(axis.ticks.x =element_blank(),axis.text.x=element_blank(),legend.position="none")+labs(title="Measuring miRNA stability with geNorm function")+xlab("value") + facet_grid(cols = vars(variable))
+
+g2
+g3
+```
+```{r}
+ggsave(filename = "Stable miRNAs.png", plot= g2, dpi=1000)
+```
+
+
