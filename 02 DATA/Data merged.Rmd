@@ -1,0 +1,32 @@
+---
+title: "data merged"
+author: "Giosuè Moscato"
+date: '2022-10-13'
+output: html_document
+---
+
+```{r}
+GBM1 <- read.csv("~/Desktop/ExosomeGBM/ExosomeGBM/02 DATA/GBM1.csv", row.names=1)
+GBM2 <- read.csv("~/Desktop/ExosomeGBM/ExosomeGBM/02 DATA/GBM2.csv", row.names=1)
+GBM1 <- GBM1[,-c(22,41)] #no GBM samples
+cutoff1 <- colnames(GBM1)[apply(GBM1,2, sum)>1000]
+cutoff2 <- colnames(GBM2)[apply(GBM2,2, sum)>1000]
+GBM1 <- GBM1[,as.character(cutoff1)]
+GBM2 <- GBM2[,as.character(cutoff2)]
+
+#editing colnames 
+colnames(GBM1) <- paste0(colnames(GBM1), "A")
+colnames(GBM2) <- paste0(colnames(GBM2), "B")
+
+#merging the two datasets
+GBM <- merge(GBM1, GBM2, by="row.names", all=FALSE)
+rownames(GBM) <- GBM[,1]
+GBM <- GBM[,-1]
+
+#ordering miRNA by descending level expression
+miRNAs_mean <- apply(GBM,1,mean)
+miRNAs_mean <-miRNAs_mean[order(miRNAs_mean, decreasing = TRUE)]
+GBM <- GBM[names(miRNAs_mean),]
+#Saving file
+write.csv(GBM, file = "GBM.csv")
+```
