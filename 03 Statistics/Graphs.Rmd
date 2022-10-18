@@ -28,7 +28,7 @@ data$sample <- factor(data$sample,levels = colnames(GBM))
 
 ###PLOTS
 
-##stat summary plot
+#stat summary plot
 ```{r}
 summary_plot <- ggplot(data = data) + stat_summary(mapping = aes(x =log(count+1) , y =  sample),fun.min = min,fun.max = max,fun = median)
 
