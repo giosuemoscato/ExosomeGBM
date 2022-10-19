@@ -3,9 +3,9 @@ Here we calculate miRNA stability across three types of samples:
 2. Post-Radiotherapy samples
 3. Healthy samples
 
-Info about each sample are contained in the *SampleType.csv* file 
+Info about each sample is contained in the *SampleType.csv* file 
 
-miRNA stability is measure using the **geNorm** function of the R package **ctrlGene**
+miRNA stability is measured using the **geNorm** function of the R package **ctrlGene**
 
 ## geNorm
 For more information, see this [article](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC126239/)
